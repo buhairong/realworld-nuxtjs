@@ -1,0 +1,15 @@
+[
+  {
+    "path": "/",
+    "component": "C:\\\\lagou\\\\projects\\\\realworld-nuxtjs\\\\pages\\\\layout",
+    "children": [
+      {
+        "path": "",
+        "name": "home",
+        "component": "C:\\\\lagou\\\\projects\\\\realworld-nuxtjs\\\\pages\\\\home",
+        "_name": "_0201c899"
+      }
+    ],
+    "_name": "_e2746f38"
+  }
+]
