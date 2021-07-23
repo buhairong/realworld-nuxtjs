@@ -60,6 +60,7 @@
 
 <script>
 import { login, register } from "@/api/user.js";
+import axios from 'axios'
 
 // 仅在客户端加载 js-cookie 包
 const Cookie = process.client ? require('js-cookie') : undefined
