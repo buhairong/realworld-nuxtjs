@@ -77,11 +77,13 @@
                 }">
                   {{article.author.username}}
                 </nuxt-link>
-                <span class="date">{{article.createdAt}}</span>
+                <span class="date">{{article.createdAt | date('MMM DD, YYYY')}}</span>
               </div>
               <button 
                 class="btn btn-outline-primary btn-sm pull-xs-right"
                 :class="{active: article.favorited}"
+                :disabled="article.favoriteDisabled"
+                @click="onFavorite(article)"
               >
                 <i class="ion-heart"></i> {{article.favoritesCount}}
               </button>
@@ -100,7 +102,7 @@
               <span>Read more...</span>
             </nuxt-link>
           </div>
-          page: {{page}}
+          
           <nav>
             <ul class="pagination">
               <li 
@@ -113,7 +115,8 @@
                   name: 'home',
                   query: {
                     page: item,
-                    tag: $route.query.tag
+                    tag: $route.query.tag,
+                    tab
                   }
                 }">
                   {{item}}
@@ -151,20 +154,24 @@
 </template>
 
 <script>
-import { getArticles } from '@/api/article.js'
+import { getArticles, getFeedArticles, addFavorite, deleteFavorite } from '@/api/article.js'
 import { getTags } from '@/api/tag.js'
 import { mapState } from 'vuex'
 
 export default {
   name: "HomeIndex",
-  async asyncData ({ query }) {
+  async asyncData ({ query, store }) {
     const page = Number.parseInt(query.page || 1)
-    
+    console.log('query', query)
     const limit = 20
     const { tag } = query
+    const tab = query.tab || 'global_feed'
+    const loadArticles = store.state.user && tab === 'your_feed'
+      ? getFeedArticles
+      : getArticles
 
     const [ articleRes, tagRes ] = await Promise.all([
-      getArticles({
+      loadArticles({
         limit,
         offset: (page - 1) * limit,
         tag
@@ -173,7 +180,9 @@ export default {
     ])
 
     const { articles, articlesCount } = articleRes.data
-    const { tags} = tagRes.data
+    const { tags } = tagRes.data
+
+    articles.forEach(article => article.favoriteDisabled = false)
     
     return {
       articles,
@@ -182,7 +191,7 @@ export default {
       limit,
       page,
       tag,
-      tab: query.tab || 'global_feed'
+      tab
     }
   },
   watchQuery: ['page', 'tag', 'tab'],
@@ -190,6 +199,22 @@ export default {
     ...mapState(['user']),
     totalPage () {
       return Math.ceil(this.articlesCount / this.limit)
+    }
+  },
+  methods: {
+    async onFavorite (article) {
+      console.log('article', article)
+      article.favoriteDisabled = true
+      if (article.favorited) {
+        await deleteFavorite(article.slug)
+        article.favorited = false
+        article.favoritesCount--
+      } else {
+        await addFavorite(article.slug)
+        article.favorited = true
+        article.favoritesCount++
+      }
+      article.favoriteDisabled = false
     }
   }
 };
