@@ -41,11 +41,11 @@
 
 <script>
 export default {
-  name: ArticleMeta,
-  Props: {
+  name: 'ArticleMeta',
+  props: {
     article: {
       type: Object,
-      request: required
+      required: true
     }
   }
 }
